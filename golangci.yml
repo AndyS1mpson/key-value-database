@@ -1,0 +1,103 @@
+linters:
+  enable-all: true
+  disable:
+    - ifshort
+    - varcheck
+    - interfacer
+    - deadcode
+    - scopelint
+    - structcheck
+    - golint
+    - maligned
+    - nosnakecase
+    - exhaustivestruct
+    - rowserrcheck
+    - sqlclosecheck
+    - structcheck
+    - wastedassign
+    - forbidigo
+    - lll
+    - funlen
+    - exhaustruct
+    - godox
+    - gci
+    - gomnd
+    - gochecknoglobals # используем глобальные переменные для оптимизации
+    - musttag # чтобы не прописывать везде json аннотации
+    # линтеры ниже надо будет поправить отдельно
+    - nolintlint
+    - wrapcheck
+    - varnamelen
+    - thelper
+    - testpackage
+    - tagliatelle
+    - paralleltest
+    - tparallel
+    - nonamedreturns
+    - nlreturn
+    - nilnil
+    - maintidx
+    - ireturn
+    - interfacebloat
+    - goerr113
+    - dupl
+    - errname
+    - predeclared
+    - errorlint
+    - containedctx
+    - contextcheck
+    - cyclop
+    - gofumpt
+    - gofmt
+    - godot
+    - goimports
+    - errcheck
+    - depguard
+    - testifylint
+    - perfsprint
+    - inamedparam
+    - revive
+
+linters-settings:
+  revive:
+    enable-all-rules: true
+    rules:
+      - name: function-length
+        disabled: true
+      - name: banned-characters
+        disabled: true
+      - name: function-result-limit
+        disabled: true
+      - name: line-length-limit
+        disabled: true
+      - name: cyclomatic
+        disabled: true
+      - name: max-public-structs
+        disabled: true
+      - name: file-header
+        disabled: true
+      - name: var-naming
+        disabled: true
+      - name: package-comments
+        disabled: true
+
+  stylecheck:
+    go: "1.22"
+    checks: ["all", "-ST1003"]
+
+issues:
+  include:
+    - EXC0012
+  exclude-use-default: false
+  exclude:
+    - ST1000 # ST1000: at least one file in a package should have a package comment
+    - ST1003
+    - don't use an underscore in package name
+  exclude-rules:
+    - path: _test\.go
+      linters:
+        - funlen
+        - goconst
+        - gomnd
+        - gosec
+        - lll
