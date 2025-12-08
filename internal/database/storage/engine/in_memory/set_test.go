@@ -36,7 +36,7 @@ func TestEngine_Set(t *testing.T) {
 		ctrl := gomock.NewController(t)
 		defer ctrl.Finish()
 
-		engine := NewEngine(zap.NewNop(), Config{PartitionsCount: 2})
+		engine := NewEngine(zap.NewNop())
 
 		ctx := common.ContextWithTxID(t.Context(), txID)
 

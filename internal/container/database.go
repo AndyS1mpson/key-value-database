@@ -16,7 +16,7 @@ func (c *Container) getParser() *parser.QueryParser {
 
 func (c *Container) getInMemoryStorageEngine() *in_memory.Engine {
 	return container.MustOrGetNew(c.Container, func() *in_memory.Engine {
-		return in_memory.NewEngine(c.GetLogger(), c.config.InMemoryStorageEngine)
+		return in_memory.NewEngine(c.GetLogger())
 	})
 }
 

@@ -3,8 +3,6 @@ package storage
 import (
 	"context"
 	"errors"
-
-	"github.com/AndyS1mpson/key-value-database/internal/common"
 )
 
 var (
@@ -14,14 +12,11 @@ var (
 // Storage implement working with engine
 type Storage struct {
 	engine engine
-
-	generator *IDGenerator
 }
 
 func NewStorage(engine engine, options ...StorageOption) *Storage {
 	storage := &Storage{
-		engine:    engine,
-		generator: NewIDGenerator(0),
+		engine: engine,
 	}
 
 	for _, option := range options {
@@ -32,7 +27,7 @@ func NewStorage(engine engine, options ...StorageOption) *Storage {
 }
 
 func (s *Storage) Get(ctx context.Context, key string) (string, error) {
-	value, found := s.engine.Get(s.wrapTXId(ctx), key)
+	value, found := s.engine.Get(ctx, key)
 	if !found {
 		return "", ErrorNotFound
 	}
@@ -41,18 +36,13 @@ func (s *Storage) Get(ctx context.Context, key string) (string, error) {
 }
 
 func (s *Storage) Set(ctx context.Context, key string, value string) error {
-	s.engine.Set(s.wrapTXId(ctx), key, value)
+	s.engine.Set(ctx, key, value)
 
 	return nil
 }
 
 func (s *Storage) Del(ctx context.Context, key string) error {
-	s.engine.Del(s.wrapTXId(ctx), key)
+	s.engine.Del(ctx, key)
 
 	return nil
-}
-
-func (s *Storage) wrapTXId(ctx context.Context) context.Context {
-	txID := s.generator.Generate()
-	return common.ContextWithTxID(ctx, txID)
 }
