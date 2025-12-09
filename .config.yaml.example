@@ -1,0 +1,9 @@
+engine:
+  type: "in_memory"
+  partitions_count: 3
+
+network:
+  address: ":3223"
+  idle_timeout: 5m
+  max_message_size: "4KB"
+  max_connections: 100
