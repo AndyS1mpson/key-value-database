@@ -2,15 +2,17 @@ package main
 
 import (
 	"bufio"
-	"context"
+	"errors"
+	"flag"
 	"fmt"
 	"os"
-	"os/signal"
 	"syscall"
+	"time"
 
-	"github.com/AndyS1mpson/key-value-database/internal/container"
-	"github.com/AndyS1mpson/key-value-database/internal/database"
 	"go.uber.org/zap"
+
+	tcpClient "github.com/AndyS1mpson/key-value-database/internal/infrastructure/network/tcp_client"
+	utils "github.com/AndyS1mpson/key-value-database/internal/utils/size_parser"
 )
 
 const (
@@ -23,45 +25,62 @@ func main() {
 }
 
 func run() (exitCode int) {
-	var err error
+	logger, _ := zap.NewProduction()
 
-	serviceContainer, shutdown := container.NewContainer(container.LoadConfig())
-	defer func() {
-		if panicErr := recover(); panicErr != nil {
-			exitCode = failExitCode
-		}
+	dbServer, err := initDBServerConnection()
+	if err != nil {
+		logger.Fatal("connection was closed", zap.Error(err))
+	}
 
-		if err != nil {
-			exitCode = failExitCode
-		}
-	}()
-	defer shutdown()
-
-	ctx, stop := signal.NotifyContext(serviceContainer.Ctx(), syscall.SIGINT, syscall.SIGTERM)
-	defer stop()
-
-	db := serviceContainer.GetDatabase()
-
-	if err = runCLI(ctx, db, serviceContainer.GetLogger()); err != nil {
+	if err = runCLIClient(dbServer, logger); err != nil {
 		exitCode = failExitCode
 	}
 
 	return exitCode
 }
 
-func runCLI(ctx context.Context, db *database.Database, logger *zap.Logger) error {
+func initDBServerConnection() (*tcpClient.TCPClient, error) {
+	address := flag.String("address", "localhost:3223", "Address of the database")
+	idleTimeout := flag.Duration("idle_timeout", time.Minute, "Idle timeout for connection")
+	maxMessageSizeStr := flag.String("max_message_size", "4KB", "Max message size for connection")
+	flag.Parse()
+
+	bufferSize, err := utils.ParseSize(*maxMessageSizeStr)
+	if err != nil {
+		return nil, err
+	}
+
+	var options []tcpClient.Option
+
+	options = append(options, tcpClient.WithClientIdleTimeout(*idleTimeout))
+	options = append(options, tcpClient.WithClientBufferSize(uint(bufferSize)))
+
+	client, err := tcpClient.NewTCPClient(*address, options...)
+	if err != nil {
+		return nil, fmt.Errorf("failed to init tcp client: %w", err)
+	}
+
+	return client, nil
+}
+
+func runCLIClient(client *tcpClient.TCPClient, logger *zap.Logger) error {
 	reader := bufio.NewReader(os.Stdin)
 
 	for {
 		fmt.Print("[key-value db] > ")
 		request, err := reader.ReadString('\n')
-		if err != nil {
+		if errors.Is(err, syscall.EPIPE) {
+			logger.Fatal("connection was closed", zap.Error(err))
+		} else if err != nil {
 			logger.Error("failed to read query", zap.Error(err))
-
-			return err
 		}
 
-		response := db.HandleQuery(ctx, request)
+		response, err := client.Send([]byte(request))
+		if errors.Is(err, syscall.EPIPE) {
+			logger.Fatal("connection was closed", zap.Error(err))
+		} else if err != nil {
+			logger.Error("failed to send query", zap.Error(err))
+		}
 
 		fmt.Println(string(response))
 	}

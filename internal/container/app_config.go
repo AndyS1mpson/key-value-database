@@ -1,19 +1,48 @@
 package container
 
 import (
-	"github.com/AndyS1mpson/key-value-database/internal/utils/dotenv"
-	"github.com/kelseyhightower/envconfig"
+	"os"
+	"path/filepath"
+	"time"
+
+	"gopkg.in/yaml.v2"
 )
 
-type AppConfig struct{}
+var configFileName = ".config.yaml"
 
-// LoadConfig load configuration from environment.
-func LoadConfig() AppConfig {
-	dotenv.Load()
+type NetworkConfig struct {
+	Address            string         `yaml:"address"`
+	IdleTimeout        *time.Duration `yaml:"idle_timeout"`
+	MaxMessageSize     *string        `yaml:"max_message_size"`
+	MaxConnectionsSize *uint          `yaml:"max_connections"`
+}
 
-	var appConfig AppConfig
+type AppConfig struct {
+	Network NetworkConfig `yaml:"network"`
+}
 
-	envconfig.MustProcess("", &appConfig)
+// NewConfig returns a new decoded Config struct
+func NewConfig() (*AppConfig, error) {
+	rootDir, err := os.Getwd()
+	if err != nil {
+		return nil, err
+	}
 
-	return appConfig
+	filePath := filepath.Join(rootDir, configFileName)
+
+	config := &AppConfig{}
+
+	file, err := os.Open(filePath)
+	if err != nil {
+		return nil, err
+	}
+	defer file.Close()
+
+	d := yaml.NewDecoder(file)
+
+	if err := d.Decode(&config); err != nil {
+		return nil, err
+	}
+
+	return config, nil
 }
