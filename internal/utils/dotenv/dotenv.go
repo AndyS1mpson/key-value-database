@@ -10,11 +10,18 @@ import (
 	"github.com/joho/godotenv"
 )
 
+type (
+	params struct {
+		filename string
+		override bool
+	}
+)
+
 const (
 	dotEnvFileName = ".env"
 )
 
-// Load load data from .env file
+// Load загружает данные из .env файла
 func Load() {
 	if err := readFile(dotEnvFileName); err != nil {
 		switch {
@@ -26,7 +33,9 @@ func Load() {
 }
 
 func readFile(filename string) error {
-	dir := findFileDir(filename, searchCallerFile())
+	var dir string
+
+	dir = findFileDir(filename, searchCallerFile())
 
 	envFile := filepath.Join(dir, filename)
 	_, err := os.Stat(envFile)
