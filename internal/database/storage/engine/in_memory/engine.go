@@ -1,6 +1,7 @@
 package in_memory
 
 import (
+	"github.com/AndyS1mpson/key-value-database/internal/utils/concurrency"
 	"go.uber.org/zap"
 )
 
@@ -8,12 +9,12 @@ import (
 type Engine struct {
 	logger *zap.Logger
 
-	data map[string]string
+	data concurrency.HashTable
 }
 
 func NewEngine(logger *zap.Logger) *Engine {
 	return &Engine{
 		logger: logger,
-		data:   make(map[string]string),
+		data: *concurrency.NewHashTable(),
 	}
 }

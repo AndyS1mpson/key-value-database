@@ -55,11 +55,8 @@ func NewTCPServer(address string, logger *zap.Logger, options ...Option) (*TCPSe
 // HandleQueries process clients requests
 func (s *TCPServer) HandleQueries(ctx context.Context, handler TCPHandler) {
 	var wg sync.WaitGroup
-	wg.Add(1)
 
-	go func() {
-		defer wg.Done()
-
+	wg.Go(func() {
 		for {
 			connection, err := s.listener.Accept()
 			if err != nil {
@@ -78,7 +75,7 @@ func (s *TCPServer) HandleQueries(ctx context.Context, handler TCPHandler) {
 			}()
 
 		}
-	}()
+	})
 
 	<-ctx.Done()
 	s.listener.Close()
