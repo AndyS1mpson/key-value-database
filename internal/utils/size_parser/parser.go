@@ -4,7 +4,7 @@ import "errors"
 
 var ErrIncorrectSize = errors.New("incorrect size")
 
-// ParseSize parse size format (for example "4Kb")
+// ParseSize parses a size string (e.g., "4KB", "10MB", "1GB") and returns the size in bytes.
 func ParseSize(text string) (int, error) {
 	if len(text) == 0 || text[0] < '0' || text[0] > '9' {
 		return 0, ErrIncorrectSize

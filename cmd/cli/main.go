@@ -39,8 +39,9 @@ func run() (exitCode int) {
 	return exitCode
 }
 
+// initDBServerConnection initializes a TCP client connection to the database server.
 func initDBServerConnection() (*tcpClient.TCPClient, error) {
-	address := flag.String("address", "localhost:3223", "Address of the database")
+	address := flag.String("address", "localhost:3224", "Address of the database")
 	idleTimeout := flag.Duration("idle_timeout", time.Minute, "Idle timeout for connection")
 	maxMessageSizeStr := flag.String("max_message_size", "4KB", "Max message size for connection")
 	flag.Parse()

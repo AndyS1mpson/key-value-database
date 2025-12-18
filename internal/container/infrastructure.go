@@ -6,12 +6,14 @@ import (
 	"github.com/samber/lo"
 	"go.uber.org/zap"
 
+	"github.com/AndyS1mpson/key-value-database/internal/infrastructure/filesystem"
 	"github.com/AndyS1mpson/key-value-database/internal/infrastructure/network/tcp_server"
 	"github.com/AndyS1mpson/key-value-database/internal/utils/container"
+	"github.com/AndyS1mpson/key-value-database/internal/utils/size_parser"
 	utils "github.com/AndyS1mpson/key-value-database/internal/utils/size_parser"
 )
 
-// GetLogger configure logger
+// GetLogger creates and returns a production logger instance.
 func (c *Container) GetLogger() *zap.Logger {
 	logger, err := zap.NewProduction()
 	if err != nil {
@@ -21,7 +23,7 @@ func (c *Container) GetLogger() *zap.Logger {
 	return logger
 }
 
-// GetTCPServer configure tcp server
+// GetTCPServer creates and configures a TCP server instance based on the configuration.
 func (c *Container) GetTCPServer() *tcp_server.TCPServer {
 	return container.MustOrGetNew(c.Container, func() *tcp_server.TCPServer {
 
@@ -41,5 +43,24 @@ func (c *Container) GetTCPServer() *tcp_server.TCPServer {
 		}
 
 		return server
+	})
+}
+
+// getSegmentsDirectory creates a SegmentDirectory instance for WAL segment access.
+func (c *Container) getSegmentsDirectory() *filesystem.SegmentDirectory {
+	return container.MustOrGetNew(c.Container, func() *filesystem.SegmentDirectory {
+		return filesystem.NewSegmentsDirectory(c.config.WAL.DirectoryPath)
+	})
+}
+
+// getSegment creates a Segment instance for WAL file writing.
+func (c *Container) getSegment() *filesystem.Segment {
+	maxSegmentSize, err := size_parser.ParseSize(c.config.WAL.MaxSegmentSize)
+	if err != nil {
+		c.GetLogger().Error("can not parse wal max_segment_size: %w", zap.Error(err))
+	}
+
+	return container.MustOrGetNew(c.Container, func() *filesystem.Segment {
+		return filesystem.NewSegment(c.config.WAL.DirectoryPath, maxSegmentSize)
 	})
 }

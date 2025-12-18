@@ -1,9 +1,11 @@
-engine:
-  type: "in_memory"
-  partitions_count: 3
-
 network:
-  address: "127.0.0.1:3223"
+  address: "127.0.0.1:3224"
   idle_timeout: 5m
   max_message_size: "4KB"
   max_connections: 100
+
+wal:
+  directory: "./wal"
+  flushing_batch_timeout: "10ms"
+  flushing_batch_size: 100
+  segment_size: "1KB"

@@ -10,13 +10,15 @@ import (
 
 var ErrSmallBufferSize = errors.New("small buffer size")
 
-// TCPClient implementation of tcp client
+// TCPClient provides a TCP client for communicating with the database server.
 type TCPClient struct {
 	connection  net.Conn
 	idleTimeout time.Duration
 	bufferSize  int
 }
 
+// NewTCPClient creates a new TCP client connected to the given address.
+// Configurable via options for timeout and buffer size.
 func NewTCPClient(address string, options ...Option) (*TCPClient, error) {
 	connection, err := net.Dial("tcp", address)
 	if err != nil {
@@ -41,7 +43,8 @@ func NewTCPClient(address string, options ...Option) (*TCPClient, error) {
 	return client, nil
 }
 
-// Send sending bytes over the network
+// Send sends a request to the server and waits for a response.
+// Returns an error if the buffer size is insufficient or network error occurs.
 func (c *TCPClient) Send(request []byte) ([]byte, error) {
 	if _, err := c.connection.Write(request); err != nil {
 		return nil, err
@@ -59,7 +62,7 @@ func (c *TCPClient) Send(request []byte) ([]byte, error) {
 	return response[:count], nil
 }
 
-// Close close active connection
+// Close closes the active TCP connection.
 func (c *TCPClient) Close() {
 	if c.connection != nil {
 		_ = c.connection.Close()

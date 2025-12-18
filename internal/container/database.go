@@ -8,24 +8,32 @@ import (
 	"github.com/AndyS1mpson/key-value-database/internal/utils/container"
 )
 
+// getParser creates a QueryParser instance for parsing database queries.
 func (c *Container) getParser() *parser.QueryParser {
 	return container.MustOrGetNew(c.Container, func() *parser.QueryParser {
 		return parser.New(c.GetLogger())
 	})
 }
 
+// getInMemoryStorageEngine creates an in-memory storage engine instance.
 func (c *Container) getInMemoryStorageEngine() *in_memory.Engine {
 	return container.MustOrGetNew(c.Container, func() *in_memory.Engine {
 		return in_memory.NewEngine(c.GetLogger())
 	})
 }
 
+// getStorage creates a Storage instance with WAL support configured.
 func (c *Container) getStorage() *storage.Storage {
 	return container.MustOrGetNew(c.Container, func() *storage.Storage {
-		return storage.NewStorage(c.getInMemoryStorageEngine())
+		options := []storage.StorageOption{
+			storage.WithWAL(c.getWAL()),
+		}
+
+		return storage.NewStorage(c.getInMemoryStorageEngine(), c.GetLogger(), options...)
 	})
 }
 
+// GetDatabase creates and returns the main Database instance with all dependencies configured.
 func (c *Container) GetDatabase() *database.Database {
 	return container.MustOrGetNew(c.Container, func() *database.Database {
 		return database.New(c.getParser(), c.getStorage(), c.GetLogger())

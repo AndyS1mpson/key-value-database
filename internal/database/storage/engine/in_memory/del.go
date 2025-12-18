@@ -2,12 +2,16 @@ package in_memory
 
 import (
 	"context"
-	"fmt"
+
+	"go.uber.org/zap"
+
+	"github.com/AndyS1mpson/key-value-database/internal/common"
 )
 
-// Del remove data by ker from database
+// Del removes a key-value pair from the in-memory storage by key.
 func (e *Engine) Del(ctx context.Context, key string) {
 	e.data.Del(key)
 
-	e.logger.Debug(fmt.Sprintf("successfull del by key: %s", key))
+	txID := common.GetTxIDFromContext(ctx)
+	e.logger.Debug("successfull del query", zap.Int64("tx", txID))
 }

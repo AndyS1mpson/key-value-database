@@ -14,7 +14,8 @@ var (
 	errIncorrectNumberOfArgs = errors.New("incorrect number of command arguments")
 )
 
-// Parse convert raw query to Query model
+// Parse converts a raw query string into a structured Query model.
+// Validates command existence and argument count.
 func (q *QueryParser) Parse(rawQuery string) (*models.Query, error) {
 	tokens := strings.Fields(rawQuery)
 

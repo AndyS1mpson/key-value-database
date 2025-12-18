@@ -7,10 +7,13 @@ import (
 	"go.uber.org/mock/gomock"
 	"go.uber.org/zap"
 
+	"github.com/AndyS1mpson/key-value-database/internal/common"
 	. "github.com/AndyS1mpson/key-value-database/internal/database/storage/engine/in_memory"
 )
 
 func TestEngine_Get(t *testing.T) {
+	txID := int64(1)
+
 	testCases := []struct {
 		name string
 		key  string
@@ -27,8 +30,9 @@ func TestEngine_Get(t *testing.T) {
 
 		engine := NewEngine(zap.NewNop())
 
+		ctx := common.ContextWithTxID(t.Context(), txID)
 
-		value, found := engine.Get(t.Context(), tc.key)
+		value, found := engine.Get(ctx, tc.key)
 		assert.False(t, found)
 		assert.Empty(t, value)
 	}

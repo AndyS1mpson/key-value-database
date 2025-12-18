@@ -6,6 +6,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/mock/gomock"
+	"go.uber.org/zap"
 
 	"github.com/AndyS1mpson/key-value-database/internal/database/storage"
 	mock "github.com/AndyS1mpson/key-value-database/internal/database/storage/mocks"
@@ -15,23 +16,29 @@ func TestStorage_GET(t *testing.T) {
 	testCases := []struct {
 		name          string
 		key           string
-		engineGet     func(*mock.Mockengine)
 		expectedValue string
 		expectedError error
+
+		engine func(e *mock.Mockengine)
+		wal    func(w *mock.Mockwal)
 	}{
 		{
 			name: "success get data",
 			key:  "test_key",
-			engineGet: func(m *mock.Mockengine) {
-				m.EXPECT().Get(gomock.Any(), "test_key").Return("test_value", true)
-			},
 			expectedValue: "test_value",
 			expectedError: nil,
+
+			engine: func(e *mock.Mockengine) {
+				e.EXPECT().Get(gomock.Any(), "test_key").Return("test_value", true)
+			},
+			wal: func(w *mock.Mockwal) {
+				w.EXPECT().Recover().Return()
+			},
 		},
 		{
 			name: "not found",
 			key:  "test_key",
-			engineGet: func(m *mock.Mockengine) {
+			engine: func(m *mock.Mockengine) {
 				m.EXPECT().Get(gomock.Any(), "test_key").Return("", false)
 			},
 			expectedValue: "",
@@ -45,9 +52,9 @@ func TestStorage_GET(t *testing.T) {
 			defer ctrl.Finish()
 
 			mockEngine := mock.NewMockengine(ctrl)
-			tc.engineGet(mockEngine)
+			tc.engine(mockEngine)
 
-			storageInstance := storage.NewStorage(mockEngine)
+			storageInstance := storage.NewStorage(mockEngine, zap.NewNop())
 
 			ctx := context.Background()
 
@@ -71,7 +78,7 @@ func TestStorage_SET(t *testing.T) {
 			key   string
 			value string
 		}
-		engineSet func(*mock.Mockengine)
+		engine func(*mock.Mockengine)
 	}{
 		{
 			name: "success set data",
@@ -82,7 +89,7 @@ func TestStorage_SET(t *testing.T) {
 				key:   "test_key",
 				value: "test_value",
 			},
-			engineSet: func(m *mock.Mockengine) {
+			engine: func(m *mock.Mockengine) {
 				m.EXPECT().Set(gomock.Any(), "test_key", "test_value")
 			},
 		},
@@ -94,9 +101,9 @@ func TestStorage_SET(t *testing.T) {
 			defer ctrl.Finish()
 
 			mockEngine := mock.NewMockengine(ctrl)
-			tc.engineSet(mockEngine)
+			tc.engine(mockEngine)
 
-			storageInstance := storage.NewStorage(mockEngine)
+			storageInstance := storage.NewStorage(mockEngine, zap.NewNop())
 
 			ctx := context.Background()
 
@@ -109,14 +116,14 @@ func TestStorage_SET(t *testing.T) {
 
 func TestStorage_DEL(t *testing.T) {
 	testCases := []struct {
-		name      string
-		key       string
-		engineDel func(*mock.Mockengine)
+		name   string
+		key    string
+		engine func(*mock.Mockengine)
 	}{
 		{
 			name: "success delete data",
 			key:  "test_key",
-			engineDel: func(m *mock.Mockengine) {
+			engine: func(m *mock.Mockengine) {
 				m.EXPECT().Del(gomock.Any(), "test_key")
 			},
 		},
@@ -128,9 +135,9 @@ func TestStorage_DEL(t *testing.T) {
 			defer ctrl.Finish()
 
 			mockEngine := mock.NewMockengine(ctrl)
-			tc.engineDel(mockEngine)
+			tc.engine(mockEngine)
 
-			storageInstance := storage.NewStorage(mockEngine)
+			storageInstance := storage.NewStorage(mockEngine, zap.NewNop())
 
 			ctx := context.Background()
 

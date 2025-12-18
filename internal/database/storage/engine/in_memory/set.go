@@ -2,12 +2,16 @@ package in_memory
 
 import (
 	"context"
-	"fmt"
+
+	"go.uber.org/zap"
+
+	"github.com/AndyS1mpson/key-value-database/internal/common"
 )
 
-// Set save data to database
+// Set stores a key-value pair in the in-memory storage.
 func (e *Engine) Set(ctx context.Context, key, value string) {
 	e.data.Set(key, value)
 
-	e.logger.Debug(fmt.Sprintf("successfull set by key: %s", key))
+	txID := common.GetTxIDFromContext(ctx)
+	e.logger.Debug("successfull set query", zap.Int64("tx", txID))
 }

@@ -10,6 +10,7 @@ import (
 
 var configFileName = ".config.yaml"
 
+// NetworkConfig contains TCP server configuration settings.
 type NetworkConfig struct {
 	Address            string         `yaml:"address"`
 	IdleTimeout        *time.Duration `yaml:"idle_timeout"`
@@ -17,11 +18,21 @@ type NetworkConfig struct {
 	MaxConnectionsSize *uint          `yaml:"max_connections"`
 }
 
-type AppConfig struct {
-	Network NetworkConfig `yaml:"network"`
+// WALConfig contains Write-Ahead Logging configuration settings.
+type WALConfig struct {
+	DirectoryPath        string        `yaml:"directory"`
+	MaxSegmentSize       string        `yaml:"segment_size"`
+	FlushingBatchTimeout time.Duration `yaml:"flushing_batch_timeout"`
+	FlushingBatchSize    int           `yaml:"flushing_batch_size"`
 }
 
-// NewConfig returns a new decoded Config struct
+// AppConfig contains the complete application configuration.
+type AppConfig struct {
+	Network NetworkConfig `yaml:"network"`
+	WAL     WALConfig     `yaml:"wal"`
+}
+
+// NewConfig loads and parses the configuration from .config.yaml file.
 func NewConfig() (*AppConfig, error) {
 	rootDir, err := os.Getwd()
 	if err != nil {

@@ -21,7 +21,7 @@ const (
 	dotEnvFileName = ".env"
 )
 
-// Load загружает данные из .env файла
+// Load loads environment variables from a .env file in the project directory.
 func Load() {
 	if err := readFile(dotEnvFileName); err != nil {
 		switch {
@@ -32,6 +32,7 @@ func Load() {
 	}
 }
 
+// readFile reads and loads the .env file from the project directory.
 func readFile(filename string) error {
 	var dir string
 
@@ -52,6 +53,7 @@ func readFile(filename string) error {
 	return nil
 }
 
+// findFileDir searches for the .env file by traversing up the directory tree from the given starting point.
 func findFileDir(filename string, from string) string {
 	dir := filepath.Dir(from)
 	gopath := filepath.Clean(os.Getenv("GOPATH"))
@@ -66,6 +68,7 @@ func findFileDir(filename string, from string) string {
 	return ""
 }
 
+// searchCallerFile finds the caller file by inspecting the call stack.
 func searchCallerFile() string {
 	_, file, _, _ := runtime.Caller(1)
 	currentFile := file
