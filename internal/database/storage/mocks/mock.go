@@ -13,6 +13,8 @@ import (
 	context "context"
 	reflect "reflect"
 
+	log "github.com/AndyS1mpson/key-value-database/internal/database/storage/wal/log"
+	concurrency "github.com/AndyS1mpson/key-value-database/internal/utils/concurrency"
 	gomock "go.uber.org/mock/gomock"
 )
 
@@ -77,4 +79,71 @@ func (m *Mockengine) Set(arg0 context.Context, arg1, arg2 string) {
 func (mr *MockengineMockRecorder) Set(arg0, arg1, arg2 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Set", reflect.TypeOf((*Mockengine)(nil).Set), arg0, arg1, arg2)
+}
+
+// Mockwal is a mock of wal interface.
+type Mockwal struct {
+	ctrl     *gomock.Controller
+	recorder *MockwalMockRecorder
+	isgomock struct{}
+}
+
+// MockwalMockRecorder is the mock recorder for Mockwal.
+type MockwalMockRecorder struct {
+	mock *Mockwal
+}
+
+// NewMockwal creates a new mock instance.
+func NewMockwal(ctrl *gomock.Controller) *Mockwal {
+	mock := &Mockwal{ctrl: ctrl}
+	mock.recorder = &MockwalMockRecorder{mock}
+	return mock
+}
+
+// EXPECT returns an object that allows the caller to indicate expected use.
+func (m *Mockwal) EXPECT() *MockwalMockRecorder {
+	return m.recorder
+}
+
+// Del mocks base method.
+func (m *Mockwal) Del(ctx context.Context, key string) concurrency.FutureError {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Del", ctx, key)
+	ret0, _ := ret[0].(concurrency.FutureError)
+	return ret0
+}
+
+// Del indicates an expected call of Del.
+func (mr *MockwalMockRecorder) Del(ctx, key any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Del", reflect.TypeOf((*Mockwal)(nil).Del), ctx, key)
+}
+
+// Recover mocks base method.
+func (m *Mockwal) Recover() ([]log.Log, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Recover")
+	ret0, _ := ret[0].([]log.Log)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// Recover indicates an expected call of Recover.
+func (mr *MockwalMockRecorder) Recover() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Recover", reflect.TypeOf((*Mockwal)(nil).Recover))
+}
+
+// Set mocks base method.
+func (m *Mockwal) Set(ctx context.Context, key, value string) concurrency.FutureError {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Set", ctx, key, value)
+	ret0, _ := ret[0].(concurrency.FutureError)
+	return ret0
+}
+
+// Set indicates an expected call of Set.
+func (mr *MockwalMockRecorder) Set(ctx, key, value any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Set", reflect.TypeOf((*Mockwal)(nil).Set), ctx, key, value)
 }

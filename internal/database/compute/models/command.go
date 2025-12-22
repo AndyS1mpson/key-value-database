@@ -1,10 +1,10 @@
 package models
 
 var (
-	CommandUnknown Command = "UNKNOWN" // unknown kv db command
-	CommandGet     Command = "GET"     // get data from kv db
-	CommandSet     Command = "SET"     // set data in kv db
-	CommandDel     Command = "DEL"     // del data from kv db
+	CommandUnknown Command = "UNKNOWN" // Unknown database command
+	CommandGet     Command = "GET"     // Get value by key
+	CommandSet     Command = "SET"     // Set key-value pair
+	CommandDel     Command = "DEL"     // Delete key-value pair
 )
 
 var availableCommands = map[Command]struct{}{
@@ -13,9 +13,10 @@ var availableCommands = map[Command]struct{}{
 	CommandDel: {},
 }
 
-// Command supported database command
+// Command represents a supported database command type.
 type Command string
 
+// IsCommandExist checks if the given command is a valid supported command.
 func IsCommandExist(command Command) bool {
 	_, ok := availableCommands[command]
 
@@ -34,7 +35,7 @@ var commandArgsNumber = map[Command]int{
 	CommandDel: delCommandArgsNumber,
 }
 
-// GetCommandArgsNumber get number of command arguments
+// GetCommandArgsNumber returns the required number of arguments for a given command.
 func GetCommandArgsNumber(command Command) int {
 	return commandArgsNumber[command]
 }

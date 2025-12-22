@@ -4,17 +4,17 @@ import "time"
 
 const defaultBufferSize = 4 << 10
 
-// Option options for configurate tcp client
+// Option is a function type for configuring TCP client settings.
 type Option func(*TCPClient)
 
-// WithClientIdleTimeout set client idle timeout
+// WithClientIdleTimeout sets the idle timeout for the client connection.
 func WithClientIdleTimeout(timeout time.Duration) Option {
 	return func(client *TCPClient) {
 		client.idleTimeout = timeout
 	}
 }
 
-// WithClientBufferSize set client buffer size
+// WithClientBufferSize sets the buffer size for reading server responses.
 func WithClientBufferSize(size uint) Option {
 	return func(client *TCPClient) {
 		client.bufferSize = int(size)

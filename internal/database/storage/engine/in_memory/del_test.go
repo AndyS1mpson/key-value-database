@@ -6,10 +6,13 @@ import (
 	"go.uber.org/mock/gomock"
 	"go.uber.org/zap"
 
+	"github.com/AndyS1mpson/key-value-database/internal/common"
 	. "github.com/AndyS1mpson/key-value-database/internal/database/storage/engine/in_memory"
 )
 
 func TestEngine_Delete(t *testing.T) {
+	txID := int64(1)
+
 	testCases := []struct {
 		name string
 		key  string
@@ -26,6 +29,8 @@ func TestEngine_Delete(t *testing.T) {
 
 		engine := NewEngine(zap.NewNop())
 
-		engine.Del(t.Context(), tc.key)
+		ctx := common.ContextWithTxID(t.Context(), txID)
+
+		engine.Del(ctx, tc.key)
 	}
 }

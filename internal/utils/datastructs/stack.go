@@ -1,23 +1,23 @@
 package datastructs
 
-// Stack структура данных - стэк
+// Stack provides a generic LIFO (Last In First Out) data structure.
 type Stack[T any] struct {
 	s []T
 }
 
-// NewStack конструктор для Stack
+// NewStack creates a new empty stack instance.
 func NewStack[T any]() *Stack[T] {
 	return &Stack[T]{
 		s: make([]T, 0),
 	}
 }
 
-// Push добавление значения в конец стэка
+// Push adds a value to the top of the stack.
 func (s *Stack[T]) Push(val T) {
 	s.s = append(s.s, val)
 }
 
-// Pop извлечение значения из конца стэка
+// Pop removes and returns the top value from the stack.
 func (s *Stack[T]) Pop() T {
 	val := s.s[len(s.s)-1]
 
@@ -26,7 +26,7 @@ func (s *Stack[T]) Pop() T {
 	return val
 }
 
-// IsEmpty проверка стэка на пустоту
+// IsEmpty checks if the stack is empty.
 func (s *Stack[T]) IsEmpty() bool {
 	return len(s.s) == 0
 }

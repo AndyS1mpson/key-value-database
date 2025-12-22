@@ -5,7 +5,8 @@ import (
 	"strings"
 )
 
-// MustOrGetNew get service instance, panic if failed 
+// MustOrGetNew retrieves a service instance from the container or creates a new one using the factory.
+// Panics if the factory function returns an error.
 func MustOrGetNew[T any](c *Container, factory func() T) T {
 	instance, err := GetOrNew(c, func() (T, error) {
 		return factory(), nil
@@ -36,6 +37,7 @@ func GetOrNew[T any](c *Container, factory func() (T, error)) (T, error) {
 	return srv, nil
 }
 
+// serviceName determines the service name by inspecting the call stack to find the caller function.
 func serviceName() ServiceName {
 	pcs := make([]uintptr, 10000)
 	n := runtime.Callers(1, pcs)

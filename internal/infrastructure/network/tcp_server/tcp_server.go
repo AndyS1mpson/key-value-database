@@ -13,8 +13,10 @@ import (
 	"go.uber.org/zap"
 )
 
+// TCPHandler is a function type for handling TCP client requests.
 type TCPHandler = func(context.Context, []byte) []byte
 
+// TCPServer implements a TCP server with connection limiting, timeouts, and concurrent request handling.
 type TCPServer struct {
 	listener  net.Listener
 	semaphore concurrency.Semaphore
@@ -26,6 +28,8 @@ type TCPServer struct {
 	logger *zap.Logger
 }
 
+// NewTCPServer creates a new TCP server listening on the given address.
+// Configurable via options for timeout, buffer size, and max connections.
 func NewTCPServer(address string, logger *zap.Logger, options ...Option) (*TCPServer, error) {
 	listener, err := net.Listen("tcp", address)
 	if err != nil {
@@ -52,7 +56,8 @@ func NewTCPServer(address string, logger *zap.Logger, options ...Option) (*TCPSe
 	return server, nil
 }
 
-// HandleQueries process clients requests
+// HandleQueries starts accepting client connections and processing requests.
+// Runs until the context is cancelled, then gracefully shuts down.
 func (s *TCPServer) HandleQueries(ctx context.Context, handler TCPHandler) {
 	var wg sync.WaitGroup
 
@@ -83,6 +88,8 @@ func (s *TCPServer) HandleQueries(ctx context.Context, handler TCPHandler) {
 	wg.Wait()
 }
 
+// handleConnection processes a single client connection, reading requests and writing responses.
+// Handles timeouts and connection errors gracefully.
 func (s *TCPServer) handleConnection(ctx context.Context, connection net.Conn, handler TCPHandler) {
 	defer func() {
 		if v := recover(); v != nil {
