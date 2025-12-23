@@ -1,3 +1,7 @@
+engine:
+  type: "in_memory"
+  partitions_number: 8
+
 network:
   address: "127.0.0.1:3224"
   idle_timeout: 5m
@@ -5,7 +9,17 @@ network:
   max_connections: 100
 
 wal:
-  directory: "./wal"
+  directory: "./wal_logs"
   flushing_batch_timeout: "10ms"
   flushing_batch_size: 100
   segment_size: "1KB"
+
+replication:
+  replica_type: "slave"
+  master_address: "127.0.0.1:3223"
+  sync_interval: 5m
+  max_replicas_number: 1
+
+logging:
+  level: "debug"
+  output: "./kv_db.log"

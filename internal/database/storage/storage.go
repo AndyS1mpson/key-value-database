@@ -13,22 +13,25 @@ import (
 )
 
 var (
-	ErrorNotFound = errors.New("not found")
+	ErrorNotFound  = errors.New("not found")
+	ErrorMutableTX = errors.New("mutable transaction on slave")
 )
 
 // Storage coordinates between the storage engine and WAL (Write-Ahead Log).
 // It ensures data durability by writing to WAL before applying changes to the engine.
 type Storage struct {
-	engine    engine
-	wal       wal
-	generator generator.IDGenerator
+	engine  engine
+	replica Replica
+	wal     wal
+	stream  <-chan []walLog.Log
 
-	logger *zap.Logger
+	generator generator.IDGenerator
+	logger    *zap.Logger
 }
 
 // NewStorage creates a new Storage instance with the given engine and logger.
 // It recovers data from WAL if available and initializes the transaction ID generator.
-func NewStorage(engine engine, logger *zap.Logger, options ...StorageOption) *Storage {
+func NewStorage(engine engine, logger *zap.Logger, options ...Option) *Storage {
 	storage := &Storage{
 		engine: engine,
 	}
@@ -47,6 +50,14 @@ func NewStorage(engine engine, logger *zap.Logger, options ...StorageOption) *St
 		}
 	}
 
+	if storage.stream != nil {
+		go func() {
+			for logs := range storage.stream {
+				_ = storage.applyData(logs)
+			}
+		}()
+	}
+
 	storage.generator = *generator.NewIDGenerator(lastLSN)
 
 	return storage
@@ -54,6 +65,10 @@ func NewStorage(engine engine, logger *zap.Logger, options ...StorageOption) *St
 
 // Get retrieves a value by key from the storage engine.
 func (s *Storage) Get(ctx context.Context, key string) (string, error) {
+	if ctx.Err() != nil {
+		return "", ctx.Err()
+	}
+
 	txID := s.generator.Generate()
 	ctx = common.ContextWithTxID(ctx, txID)
 
@@ -68,6 +83,12 @@ func (s *Storage) Get(ctx context.Context, key string) (string, error) {
 // Set stores a key-value pair. It writes to WAL first (if enabled) for durability,
 // then applies the change to the storage engine.
 func (s *Storage) Set(ctx context.Context, key string, value string) error {
+	if s.replica != nil && !s.replica.IsMaster() {
+		return ErrorMutableTX
+	} else if ctx.Err() != nil {
+		return ctx.Err()
+	}
+
 	txID := s.generator.Generate()
 	ctx = common.ContextWithTxID(ctx, txID)
 
@@ -86,6 +107,12 @@ func (s *Storage) Set(ctx context.Context, key string, value string) error {
 // Del removes a key-value pair. It writes to WAL first (if enabled) for durability,
 // then applies the deletion to the storage engine.
 func (s *Storage) Del(ctx context.Context, key string) error {
+	if s.replica != nil && !s.replica.IsMaster() {
+		return ErrorMutableTX
+	} else if ctx.Err() != nil {
+		return ctx.Err()
+	}
+
 	txID := s.generator.Generate()
 	ctx = common.ContextWithTxID(ctx, txID)
 

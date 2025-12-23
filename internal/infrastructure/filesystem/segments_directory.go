@@ -7,7 +7,7 @@ import (
 	fsutils "github.com/AndyS1mpson/key-value-database/internal/utils/filesystem"
 )
 
-var defaultWALDataDirectory = "./data/kv-db/wal"
+var defaultWALDataDirectory = "./data/kv-db/wal_logs"
 
 // SegmentDirectory provides access to WAL segment files in a directory.
 type SegmentDirectory struct {

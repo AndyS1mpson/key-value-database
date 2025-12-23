@@ -9,16 +9,18 @@ import (
 
 //go:generate mockgen -source=deps.go -destination=./mocks/mock.go
 
-// engine defines the interface for low-level storage operations.
 type engine interface {
 	Set(context.Context, string, string)
 	Get(context.Context, string) (string, bool)
 	Del(context.Context, string)
 }
 
-// wal defines the interface for Write-Ahead Logging operations.
 type wal interface {
 	Recover() ([]log.Log, error)
 	Set(ctx context.Context, key, value string) concurrency.FutureError
 	Del(ctx context.Context, key string) concurrency.FutureError
+}
+
+type Replica interface {
+	IsMaster() bool
 }
