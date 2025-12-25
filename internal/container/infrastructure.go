@@ -7,6 +7,7 @@ import (
 	"go.uber.org/zap"
 
 	"github.com/AndyS1mpson/key-value-database/internal/infrastructure/filesystem"
+	"github.com/AndyS1mpson/key-value-database/internal/infrastructure/log"
 	"github.com/AndyS1mpson/key-value-database/internal/infrastructure/network/tcp_server"
 	"github.com/AndyS1mpson/key-value-database/internal/utils/container"
 	"github.com/AndyS1mpson/key-value-database/internal/utils/size_parser"
@@ -15,9 +16,9 @@ import (
 
 // GetLogger creates and returns a production logger instance.
 func (c *Container) GetLogger() *zap.Logger {
-	logger, err := zap.NewProduction()
+	logger, err := log.ConfigureZapLogger(c.config.Logging)
 	if err != nil {
-		panic(fmt.Sprintf("can not init logger: %s", err))
+		panic(fmt.Sprintf("configure logger: %s", err))
 	}
 
 	return logger

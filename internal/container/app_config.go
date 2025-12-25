@@ -3,33 +3,25 @@ package container
 import (
 	"os"
 	"path/filepath"
-	"time"
 
 	"gopkg.in/yaml.v2"
+
+	"github.com/AndyS1mpson/key-value-database/internal/database/storage/engine"
+	"github.com/AndyS1mpson/key-value-database/internal/database/storage/replication"
+	"github.com/AndyS1mpson/key-value-database/internal/database/storage/wal"
+	"github.com/AndyS1mpson/key-value-database/internal/infrastructure/log"
+	network "github.com/AndyS1mpson/key-value-database/internal/infrastructure/network/tcp_server"
 )
 
 var configFileName = ".config.yaml"
 
-// NetworkConfig contains TCP server configuration settings.
-type NetworkConfig struct {
-	Address            string         `yaml:"address"`
-	IdleTimeout        *time.Duration `yaml:"idle_timeout"`
-	MaxMessageSize     *string        `yaml:"max_message_size"`
-	MaxConnectionsSize *uint          `yaml:"max_connections"`
-}
-
-// WALConfig contains Write-Ahead Logging configuration settings.
-type WALConfig struct {
-	DirectoryPath        string        `yaml:"directory"`
-	MaxSegmentSize       string        `yaml:"segment_size"`
-	FlushingBatchTimeout time.Duration `yaml:"flushing_batch_timeout"`
-	FlushingBatchSize    int           `yaml:"flushing_batch_size"`
-}
-
 // AppConfig contains the complete application configuration.
 type AppConfig struct {
-	Network NetworkConfig `yaml:"network"`
-	WAL     WALConfig     `yaml:"wal"`
+	Engine      *engine.Config      `yaml:"engine"`
+	Network     *network.Config     `yaml:"network"`
+	WAL         *wal.Config         `yaml:"wal"`
+	Replication *replication.Config `yaml:"replication"`
+	Logging     *log.Config         `yaml:"logging"`
 }
 
 // NewConfig loads and parses the configuration from .config.yaml file.

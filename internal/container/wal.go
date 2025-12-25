@@ -24,7 +24,12 @@ func (c *Container) getLogWriter() *writer.Writer {
 // getWAL creates a WAL instance and starts its background processing goroutine.
 func (c *Container) getWAL() *wal.WAL {
 	return container.MustOrGetNew(c.Container, func() *wal.WAL {
-		wal := wal.NewWAL(c.getLogWriter(), c.getLogReader(), c.config.WAL.FlushingBatchTimeout, c.config.WAL.FlushingBatchSize)
+		wal := wal.NewWAL(
+			c.getLogWriter(),
+			c.getLogReader(),
+			c.config.WAL.FlushingBatchTimeout,
+			c.config.WAL.FlushingBatchSize,
+		)
 
 		wal.Start(c.Ctx())
 

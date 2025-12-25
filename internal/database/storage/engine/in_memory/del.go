@@ -10,7 +10,13 @@ import (
 
 // Del removes a key-value pair from the in-memory storage by key.
 func (e *Engine) Del(ctx context.Context, key string) {
-	e.data.Del(key)
+	partitionIdx := 0
+	if len(e.partitions) > 1 {
+		partitionIdx = e.partitionIdx(key)
+	}
+
+	partition := e.partitions[partitionIdx]
+	partition.Del(key)
 
 	txID := common.GetTxIDFromContext(ctx)
 	e.logger.Debug("successfull del query", zap.Int64("tx", txID))
